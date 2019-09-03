@@ -10,6 +10,12 @@ pub enum MorseSymbol {
     Dash = 1,
 }
 
+pub const ASCII_DOT: &str = ".";
+pub const UNICODE_DOT: &str = "\u{25cf}";
+pub const ASCII_DASH: &str = "---";
+pub const UNICODE_DASH: &str = "\u{2586}\u{2586}\u{2586}";
+pub const SEPARATOR: char = ' ';
+
 pub const ALPHABET: &[(u8, Morse)] = &[
     //
     // letters
