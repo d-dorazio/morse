@@ -1,10 +1,10 @@
-#[derive(Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct Morse {
     symbols: u8,
     len: u8,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum MorseSymbol {
     Dot = 0,
     Dash = 1,
@@ -102,5 +102,8 @@ impl Morse {
     }
 }
 
+pub mod decoder;
 pub mod encoder;
+
+pub use decoder::MorseDecoder;
 pub use encoder::{MorseEncoder, MorseEncoding};

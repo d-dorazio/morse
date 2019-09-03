@@ -5,4 +5,5 @@ authors = ["Daniele D'Orazio <d.dorazio96@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+itertools = "0.8"
 structopt = "0.3"
