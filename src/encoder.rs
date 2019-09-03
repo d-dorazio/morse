@@ -49,12 +49,12 @@ impl MorseEncoder {
             });
 
             for symbols in encoded_word {
-                let symbols = symbols?;
-
-                // the word separator is 7 units, but we already inserted 3 as part of the last
-                // word, only 4 left to insert
-                morsed.extend(symbols.chain(iter::repeat(SEPARATOR).take(4)));
+                morsed.extend(symbols?);
             }
+
+            // the word separator is 7 units, but we already inserted 3 as part of the last
+            // word, only 4 left to insert
+            morsed.extend(iter::repeat(SEPARATOR).take(4));
         }
 
         // remove word whitespaces
