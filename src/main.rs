@@ -3,8 +3,6 @@ use std::io;
 use std::io::BufRead;
 use std::path::PathBuf;
 
-use morse::{MorseDecoder, MorseEncoder, MorseEncoding};
-
 use structopt::StructOpt;
 
 /// Morse is a simple application to convert text into morse code.
@@ -15,7 +13,7 @@ pub enum Opt {
         /// Encoding of the output representation of the morse code. Can be either "ascii" or
         /// "unicode".
         #[structopt(short, long, parse(try_from_str = encoding_from_str), default_value = "ascii")]
-        encoding: MorseEncoding,
+        encoding: Encoding,
 
         /// The input text to encode.
         #[structopt(name = "FILE", parse(from_os_str))]
@@ -30,10 +28,16 @@ pub enum Opt {
     },
 }
 
-fn encoding_from_str(input: &str) -> Result<MorseEncoding, String> {
+#[derive(Debug)]
+pub enum Encoding {
+    Ascii,
+    Unicode,
+}
+
+fn encoding_from_str(input: &str) -> Result<Encoding, String> {
     match input {
-        "a" | "ascii" => Ok(MorseEncoding::Ascii),
-        "u" | "unicode" => Ok(MorseEncoding::Unicode),
+        "a" | "ascii" => Ok(Encoding::Ascii),
+        "u" | "unicode" => Ok(Encoding::Unicode),
         enc => Err(format!("unrecognized encoding {}", enc)),
     }
 }
@@ -55,32 +59,35 @@ fn main() -> std::io::Result<()> {
     }
 }
 
-fn encode(input: &mut impl io::Read, encoding: MorseEncoding) -> io::Result<()> {
-    let encoder = MorseEncoder::new();
+fn encode(input: &mut impl io::Read, encoding: Encoding) -> io::Result<()> {
+    let mut encoder = match encoding {
+        Encoding::Ascii => morse::TextEncoder::ascii(),
+        Encoding::Unicode => morse::TextEncoder::unicode(),
+    };
 
     let input = io::BufReader::new(input);
 
     for line in input.lines() {
         let line = line?;
 
-        match encoder.encode(&line, encoding) {
+        match morse::encode(&mut encoder, &line) {
             None => println!("cannot encode this line because of not recognized characters"),
-            Some(encoded) => println!("{}", encoded),
+            Some(()) => println!("{}", encoder.encoded()),
         };
+
+        encoder.clear();
     }
 
     Ok(())
 }
 
 fn decode(input: &mut impl io::Read) -> io::Result<()> {
-    let decoder = MorseDecoder::new();
-
     let input = io::BufReader::new(input);
 
     for line in input.lines() {
         let line = line?;
 
-        match decoder.decode(&line) {
+        match morse::decode(&line) {
             Err(err) => println!("error: {}", err),
             Ok(decoded) => println!("{}", decoded),
         };
