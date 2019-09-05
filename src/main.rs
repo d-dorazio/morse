@@ -8,6 +8,7 @@ use structopt::StructOpt;
 /// Morse is a simple application to convert text into morse code.
 #[derive(Debug, StructOpt)]
 pub enum Opt {
+    /// Encode the input in morse code.
     #[structopt(name = "encode")]
     Encode {
         /// Encoding of the output representation of the morse code. Can be either "ascii" or
@@ -20,9 +21,27 @@ pub enum Opt {
         input: Option<PathBuf>,
     },
 
+    /// Decode the morse code.
     #[structopt(name = "decode")]
     Decode {
         /// The input text to encode.
+        #[structopt(name = "FILE", parse(from_os_str))]
+        input: Option<PathBuf>,
+    },
+
+    /// Encode and play the input.
+    #[structopt(name = "play")]
+    Play {
+        /// Speed of the audio, chain the option to go faster and faster like `-fff`.
+        #[structopt(short = "f", long = "fast", parse(from_occurrences))]
+        speed: u8,
+
+        /// The frequency in Hz to beep at. For example, 440Hz is the frequency of the musical note
+        /// A.
+        #[structopt(long, default_value = "220")]
+        frequency: f32,
+
+        /// The input text to encode and play.
         #[structopt(name = "FILE", parse(from_os_str))]
         input: Option<PathBuf>,
     },
@@ -56,6 +75,16 @@ fn main() -> std::io::Result<()> {
         } => encode(&mut File::open(input)?, encoding),
         Opt::Decode { input: None } => decode(&mut io::stdin()),
         Opt::Decode { input: Some(input) } => decode(&mut File::open(input)?),
+        Opt::Play {
+            input: None,
+            speed,
+            frequency,
+        } => play(&mut io::stdin(), speed, frequency),
+        Opt::Play {
+            input: Some(input),
+            speed,
+            frequency,
+        } => play(&mut File::open(input)?, speed, frequency),
     }
 }
 
@@ -92,6 +121,30 @@ fn decode(input: &mut impl io::Read) -> io::Result<()> {
             Ok(decoded) => println!("{}", decoded),
         };
     }
+
+    Ok(())
+}
+
+fn play(input: &mut impl io::Read, speed: u8, frequency: f32) -> io::Result<()> {
+    let samples_per_symbol = morse::AudioSource::FRAME_RATE / 2_u32.pow(1 + u32::from(speed));
+    let mut source = morse::AudioSource::new(frequency, samples_per_symbol);
+
+    let input = io::BufReader::new(input);
+
+    for line in input.lines() {
+        let line = line?;
+
+        if morse::encode(&mut source, &line).is_none() {
+            println!("cannot encode this line because of not recognized characters");
+        }
+    }
+
+    let device = rodio::default_output_device()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "no audio output device found"))?;
+
+    let sink = rodio::Sink::new(&device);
+    sink.append(source);
+    sink.sleep_until_end();
 
     Ok(())
 }

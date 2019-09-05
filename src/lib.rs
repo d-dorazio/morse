@@ -112,9 +112,11 @@ impl Letter {
     }
 }
 
+pub mod audio;
 pub mod decoder;
 pub mod encoder;
 
+pub use audio::AudioSource;
 pub use decoder::decode;
 pub use encoder::{encode, TextEncoder};
 
