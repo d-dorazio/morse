@@ -107,3 +107,23 @@ pub mod encoder;
 
 pub use decoder::MorseDecoder;
 pub use encoder::{MorseEncoder, MorseEncoding};
+
+#[cfg(test)]
+mod tests {
+    use super::{MorseDecoder, MorseEncoder, MorseEncoding};
+
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn prop_decode_encoded(input in "[A-Z0-9]+( [A-Z0-9]+)") {
+            let encoder = MorseEncoder::new();
+            let decoder = MorseDecoder::new();
+
+            let encoded = encoder.encode(&input, MorseEncoding::Ascii).unwrap();
+            let decoded = decoder.decode(&encoded).unwrap();
+
+            prop_assert_eq!(input, decoded);
+        }
+    }
+}
