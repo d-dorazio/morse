@@ -26,7 +26,7 @@ pub const ALPHABET: &[(u8, Morse)] = &[
     (b'D', Morse::new().dash().dot().dot()),
     (b'E', Morse::new().dot()),
     (b'F', Morse::new().dot().dot().dash().dot()),
-    (b'G', Morse::new().dash().dash()),
+    (b'G', Morse::new().dash().dash().dot()),
     (b'H', Morse::new().dot().dot().dot().dot()),
     (b'I', Morse::new().dot().dot()),
     (b'J', Morse::new().dot().dash().dash().dash()),
