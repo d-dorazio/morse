@@ -5,7 +5,8 @@ use std::path::PathBuf;
 
 use structopt::StructOpt;
 
-/// Morse is a simple application to convert text into morse code.
+/// Morse is a simple application to play around with morse code. It allows to encode, decode and
+/// play morse code.
 #[derive(Debug, StructOpt)]
 pub enum Opt {
     /// Encode the input in morse code.
